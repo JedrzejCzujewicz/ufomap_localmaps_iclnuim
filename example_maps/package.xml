@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>example_maps</name>
+  <version>1.1.0</version>
+  <description>
+    Example ROS maps
+  </description>
+  <license>Apache 2.0</license>
+  <author email="dominik.belter@put.poznan.pl">Dominik Belter</author>
+  <maintainer email="dominik.belter@put.poznan.pl">Dominik Belter</maintainer>
+  <url type="website">http://wiki.ros.org/turtlebot3_navigation</url>
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>map_server</exec_depend>
+</package>
