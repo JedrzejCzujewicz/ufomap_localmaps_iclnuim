@@ -1,5 +1,5 @@
 # 16.12.2024
-### Test mapy lokalnej (bez mapy globalnej) z Octomap.
+### Test mapy lokalnej i mapy globalnej razem z Octomap.
 
 Aby uruchomic:
 
