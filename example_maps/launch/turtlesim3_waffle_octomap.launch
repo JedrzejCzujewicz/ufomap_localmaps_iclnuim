@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <!-- Start position of waffle robot in scene. -->
+  <arg name="x_pos" default="-3.0"/>
+  <arg name="y_pos" default="1.0"/>
+  <arg name="z_pos" default="0.0"/>
+
+  <!-- Start gazebo server with turtlebot3_house scene. -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name"    value="$(find turtlebot3_gazebo)/worlds/turtlebot3_house.world"/>
+    <arg name="paused"        value="false"/>
+    <arg name="use_sim_time"  value="true"/>
+    <arg name="gui"           value="false"/>
+    <arg name="headless"      value="false"/>
+    <arg name="debug"         value="false"/>
+  </include>
+
+  <!-- Load robot_description param for tf, rviz and gazebo spawn. -->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_waffle.urdf.xacro" />
+
+  <!-- Spawn turtlebot into gazebo based on robot_description. -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model turtlebot3 -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+
+  <!-- Publish turtlebot3 tf's. -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="waffle_state_publisher" />
+
+  <!-- Uruchom node filtrujący chmurę punktów -->
+  <node pkg="example_maps" type="pointcloud_filter.py" name="pointcloud_filter" output="screen">
+    <!-- Parametry obszaru lokalnego - zmniejszone do 1m -->
+    <param name="x_min" value="-1.0"/>
+    <param name="x_max" value="1.0"/>
+    <param name="y_min" value="-1.0"/>
+    <param name="y_max" value="1.0"/>
+    <param name="z_min" value="0.0"/>
+    <param name="z_max" value="2.0"/>
+  </node>
+
+  <!-- Globalna mapa (niższa rozdzielczość) -->
+  <node pkg="octomap_server" type="octomap_server_node" name="global_octomap_server" output="screen">
+    <param name="resolution" value="0.1" />
+    <param name="frame_id" type="string" value="odom" />
+    <param name="sensor_model/max_range" value="5.0" />
+    <param name="publish_free_space" value="false" />
+    <param name="height_map" value="false" />
+    <param name="publish_markers" value="true" />
+    <param name="height_map" value="true" />
+    <param name="color_factor" value="0.8" />
+    <remap from="occupied_cells_vis_array" to="global_map_markers" />
+    <remap from="cloud_in" to="/filtered_points_global" />
+  </node>
+
+  <!-- Lokalna mapa (wysoka rozdzielczość) -->
+  <node pkg="octomap_server" type="octomap_server_node" name="local_octomap_server" output="screen">
+    <param name="resolution" value="0.01" />
+    <param name="frame_id" type="string" value="odom" />
+    <param name="sensor_model/max_range" value="5.0" />
+    <param name="publish_free_space" value="false" />
+    <param name="height_map" value="false" />
+    <param name="publish_markers" value="true" />
+    <param name="height_map" value="true" />
+    <param name="color_factor" value="0.8" />
+    <remap from="occupied_cells_vis_array" to="local_map_markers" />
+    <remap from="cloud_in" to="/filtered_points_local" />
+  </node>
+
+  <!-- Launch RViz with custom configuration -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find example_maps)/rviz/turtlebot3_waffle_octomap.rviz" />
+</launch>
