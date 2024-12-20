@@ -1,0 +1,17 @@
+<launch>
+    <!-- Load robot description -->
+    <arg name="model" default="waffle"/>
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro"/>
+    
+    <!-- Robot state publisher -->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+        <param name="publish_frequency" type="double" value="50.0"/>
+    </node>
+    
+    <!-- Launch point cloud visualizer -->
+    <node pkg="tum_visualizer" type="tum_pointcloud_visualizer.py" name="turtlebot_pointcloud_visualizer" output="screen">
+    </node>
+    
+    <!-- Launch RViz with custom configuration -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find tum_visualizer)/rviz/turtlebot_pointcloud.rviz"/>
+</launch>
